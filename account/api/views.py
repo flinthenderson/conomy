@@ -13,23 +13,31 @@ import json
 
 @api_view(["GET"])
 def list_wallets(request):
-	wallets = Wallet.objects.all()
-	for wallet in wallets:
-		wallet.update_balance()
+	try:
+		wallets = Wallet.objects.all()
+		for wallet in wallets:
+			wallet.update_balance()
 
-	serializer = WalletSerializer(wallets, many=True)
-	return JsonResponse({'wallets': serializer.data}, safe=False, status=status.HTTP_200_OK)
+		serializer = WalletSerializer(wallets, many=True)
+		return JsonResponse({'wallets': serializer.data}, safe=False, status=status.HTTP_200_OK)
+	except Exception:
+		return JsonResponse({'error': 'Something went wrong'}, safe=False,
+							status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
 def get_wallet_by_id(request, id):
-	wallet = Wallet.objects.filter(pk=id)[0]
-	wallet.update_balance()
-	transactions = Transaction.objects.filter(wallet=id)
+	try:
+		wallet = Wallet.objects.filter(pk=id)[0]
+		wallet.update_balance()
+		transactions = Transaction.objects.filter(wallet=id)
 
-	serializer = WalletSerializer(wallet, many=False)
-	serializer_transactions = TransactionSerializer(transactions, many=True)
-	return JsonResponse({'wallet': serializer.data, 'transactions':serializer_transactions.data}, safe=False,
-						status=status.HTTP_200_OK)
+		serializer = WalletSerializer(wallet, many=False)
+		serializer_transactions = TransactionSerializer(transactions, many=True)
+		return JsonResponse({'wallet': serializer.data, 'transactions':serializer_transactions.data}, safe=False,
+							status=status.HTTP_200_OK)
+	except Exception:
+		return JsonResponse({'error': 'Something went wrong'}, safe=False,
+							status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -45,10 +53,8 @@ def add_wallet(request):
 		)
 		serializer = WalletSerializer(wallet)
 		return JsonResponse({'wallets': serializer.data}, safe=False, status=status.HTTP_201_CREATED)
-	except ObjectDoesNotExist as e:
-		return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
 	except Exception:
-		return JsonResponse({'error': 'Something terrible went wrong'}, safe=False,
+		return JsonResponse({'error': 'Something went wrong'}, safe=False,
 							status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -61,10 +67,8 @@ def update_wallet(request, id):
 		wallet = Wallet.objects.get(pk=id)
 		serializer = WalletSerializer(wallet)
 		return JsonResponse({'wallet': serializer.data}, safe=False, status=status.HTTP_200_OK)
-	except ObjectDoesNotExist as e:
-		return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
 	except Exception:
-		return JsonResponse({'error': 'Something terrible went wrong'}, safe=False,
+		return JsonResponse({'error': 'Something went wrong'}, safe=False,
 							status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -74,8 +78,6 @@ def delete_wallet(request, id):
 		wallet = Wallet.objects.get(pk=id)
 		wallet.delete()
 		return Response(status=status.HTTP_204_NO_CONTENT)
-	except ObjectDoesNotExist as e:
-		return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
 	except Exception:
 		return JsonResponse({'error': 'Something went wrong'}, safe=False,
 							status=status.HTTP_500_INTERNAL_SERVER_ERROR)
