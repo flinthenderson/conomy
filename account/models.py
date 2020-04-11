@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 # Create your models here.
 
 class Wallet(models.Model):
@@ -16,6 +16,7 @@ class Transaction(models.Model):
 	wallet = models.ForeignKey('account.Wallet', related_name='transactions', on_delete=models.CASCADE)
 	volume = models.IntegerField()
 	description = models.CharField(null=False, max_length=40)
+	date = models.DateTimeField(default=timezone.now())
 
 	def __str__(self):
 		return self.description + ' ' + str(self.volume)
