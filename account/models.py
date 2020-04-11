@@ -9,6 +9,14 @@ class Wallet(models.Model):
 	#user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 	name = models.CharField(max_length=30)
 	description = models.CharField(max_length=100)
+	balance = models.IntegerField(default=0)
+
+	def update_balance(self):
+		transactions = Transaction.objects.filter(wallet=self.pk)
+		for transaction in transactions:
+			self.balance += transaction.volume
+
+
 	def __str__(self):
 		return self.name
 

@@ -14,17 +14,22 @@ import json
 @api_view(["GET"])
 def list_wallets(request):
 	wallets = Wallet.objects.all()
+	for wallet in wallets:
+		wallet.update_balance()
+
 	serializer = WalletSerializer(wallets, many=True)
 	return JsonResponse({'wallets': serializer.data}, safe=False, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
 def get_wallet_by_id(request, id):
 	wallet = Wallet.objects.filter(pk=id)[0]
+	wallet.update_balance()
 	transactions = Transaction.objects.filter(wallet=id)
 
 	serializer = WalletSerializer(wallet, many=False)
 	serializer_transactions = TransactionSerializer(transactions, many=True)
-	return JsonResponse({'wallet': serializer.data, 'transactions':serializer_transactions.data}, safe=False, status=status.HTTP_200_OK)
+	return JsonResponse({'wallet': serializer.data, 'transactions':serializer_transactions.data}, safe=False,
+						status=status.HTTP_200_OK)
 
 
 
@@ -39,7 +44,7 @@ def add_wallet(request):
 			description=payload["description"],
 		)
 		serializer = WalletSerializer(wallet)
-		return JsonResponse({'books': serializer.data}, safe=False, status=status.HTTP_201_CREATED)
+		return JsonResponse({'wallets': serializer.data}, safe=False, status=status.HTTP_201_CREATED)
 	except ObjectDoesNotExist as e:
 		return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
 	except Exception:
@@ -93,8 +98,6 @@ def list_all_transactions(request):
 def add_transaction(request):
 	#THIS IS IT
 	payload = json.loads(str(request.POST.dict()).replace("\'", "\""))
-	#uncomment to use JSON to address wallet
-	# id = payload["id"]
 	id = payload["id"]
 
 	try:
