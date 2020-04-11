@@ -1,0 +1,11 @@
+{% extends 'account/base.html' %}
+{% block content %}
+    <h1>Welcome to this index page</h1>
+    {% if list_of_wallets %}
+        <ul>
+        {% for wallet in list_of_wallets %}
+            <li>{{ wallet.name }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
